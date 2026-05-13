@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Courses - Student Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar h1 {
+            font-size: 24px;
+        }
+        
+        .navbar-user {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        
+        .navbar a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h2 {
+            color: #333;
+            font-size: 28px;
+        }
+        
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        
+        .back-btn:hover {
+            background: #764ba2;
+        }
+        
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .course-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #667eea;
+        }
+        
+        .course-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .course-info {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+        
+        .course-info strong {
+            color: #333;
+        }
+
+        .course-actions {
+            margin-top: 18px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .withdraw-btn {
+            padding: 10px 16px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-size: 14px;
+        }
+
+        .withdraw-btn:hover {
+            background: #c82333;
+        }
+
+        .withdraw-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .no-courses {
+            text-align: center;
+            padding: 50px;
+            color: #999;
+            background: white;
+            border-radius: 10px;
+        }
+
+        .status-message {
+            margin: 0 0 18px 0;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .status-message.success {
+            display: block;
+            background: #e8f5e9;
+            color: #1b5e20;
+            border: 1px solid #a5d6a7;
+        }
+
+        .status-message.error {
+            display: block;
+            background: #ffebee;
+            color: #b71c1c;
+            border: 1px solid #ef9a9a;
+        }
+
+        .hidden {
+            display: none;
+        }
+        
+        .logout-btn {
+            background: #dc3545;
+        }
+        
+        .logout-btn:hover {
+            background: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🎓 University System</h1>
+        <div class="navbar-user">
+            <span>👤 <%= user.username %> (Student)</span>
+            <a href="/logout" class="logout-btn">Logout</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="header">
+            <h2>📚 My Courses</h2>
+            <a href="/student/dashboard" class="back-btn">← Back to Dashboard</a>
+        </div>
+
+        <div id="statusMessage" class="status-message" role="status" aria-live="polite"></div>
+        
+        <% if (courses && courses.length > 0) { %>
+            <div class="courses-grid" id="coursesGrid">
+                <% courses.forEach(course => { %>
+                    <div class="course-card" data-course-id="<%= course.course_id %>">
+                        <h3><%= course.course_name %></h3>
+                        <div class="course-info">
+                            <p><strong>Course ID:</strong> <%= course.course_id %></p>
+                            <p><strong>Credit Hours:</strong> <%= course.credits %></p>
+                            <p><strong>semester:</strong> <%= course.semester %></p>
+                            <p><strong>Instructor:</strong> <%= course.instructor_name || 'N/A' %></p>
+                            <p><strong>Department:</strong> <%= course.DEPTNAME || 'N/A' %></p>
+                        </div>
+
+                        <div class="course-actions">
+                            <button class="withdraw-btn" onclick="withdrawCourse(<%= course.course_id %>)">
+                                Withdraw
+                            </button>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        <% } else { %>
+            <div class="no-courses" id="noCoursesState">
+                <p>You are not enrolled in any courses yet.</p>
+            </div>
+        <% } %>
+
+        <div class="no-courses hidden" id="emptyCoursesState">
+            <p>You are not enrolled in any courses yet.</p>
+        </div>
+    </div>
+
+    <script>
+        function showStatus(message, type) {
+            const statusBox = document.getElementById('statusMessage');
+            if (!statusBox) return;
+            statusBox.className = 'status-message ' + type;
+            statusBox.textContent = message;
+        }
+
+        async function withdrawCourse(course_id) {
+            if (!confirm('Are you sure you want to withdraw from this course?')) {
+                return;
+            }
+
+            try {
+                showStatus('Withdrawing from course...', 'success');
+
+                const response = await fetch('/student/unenroll/' + course_id, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showStatus('✅ ' + data.message, 'success');
+                    setTimeout(() => window.location.reload(), 800);
+                } else {
+                    showStatus('❌ ' + data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus('❌ Error withdrawing from course', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

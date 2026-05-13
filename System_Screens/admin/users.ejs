@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Users - Admin Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; }
+        .navbar { background: linear-gradient(135deg,#667eea 0%,#764ba2 100%); color: white; padding: 20px; display:flex; justify-content:space-between; align-items:center; }
+        .container { max-width:1200px; margin:30px auto; padding:20px; }
+        .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+        .back-btn{ padding:10px 16px; background:#667eea; color:#fff; border-radius:8px; text-decoration:none; }
+        table { width:100%; border-collapse:collapse; background:white; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+        th { background:#667eea; color:#fff; padding:12px; text-align:left; }
+        td { padding:12px; border-bottom:1px solid #eee; }
+        .search-wrap{ margin:0 0 12px 0; }
+        .search-input{ width:100%; max-width:420px; padding:10px; border:1px solid #d6dbe6; border-radius:8px; }
+        .btn{ padding:8px 10px; border-radius:6px; cursor:pointer; border:none; font-weight:700 }
+        .btn-activate{ background:#1b5e20; color:#fff }
+        .btn-deactivate{ background:#b71c1c; color:#fff }
+        .status-badge{ display:inline-block; padding:4px 10px; border-radius:999px; font-weight:700; }
+        .status-active{ background:#e8f5e9; color:#1b5e20; border:1px solid #a5d6a7 }
+        .status-inactive{ background:#ffebee; color:#b71c1c; border:1px solid #ef9a9a }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🎓 University System</h1>
+        <div>👤 <%= user.username %> (<%= user.role %>) <a href="/logout" style="margin-left:12px;color:white;">Logout</a></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h2>🔐 Application Users</h2>
+            <a href="/admin/dashboard" class="back-btn">← Back</a>
+        </div>
+
+        <div class="search-wrap">
+            <input id="userSearch" class="search-input" placeholder="Search by username, role, ref id, or status" />
+        </div>
+
+        <table id="usersTable">
+            <thead>
+                <tr>
+                    <th>user_id</th>
+                    <th>username</th>
+                    <th>password</th>
+                    <th>role</th>
+                    <th>ref_id</th>
+                    <th>status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% users.forEach(u => { %>
+                    <tr data-user_id="<%= u.user_id %>">
+                        <td><%= u.user_id %></td>
+                        <td><%= u.username %></td>
+                        <td><%= u.password %></td>
+                        <td><%= u.role %></td>
+                        <td><%= u.ref_id %></td>
+                        <td>
+                            <% const st = (u.status || '').toUpperCase(); %>
+                            <span class="status-badge <%= st === 'ACTIVE' ? 'status-active' : 'status-inactive' %>"><%= st || 'INACTIVE' %></span>
+                        </td>
+                        <td>
+                            <% if ((u.status||'').toUpperCase() === 'ACTIVE') { %>
+                                <button class="btn btn-deactivate" data-user_id="<%= u.user_id %>" onclick="deactivateUser(<%= u.user_id %>)">Deactivate</button>
+                            <% } else { %>
+                                <button class="btn btn-activate" data-user_id="<%= u.user_id %>" onclick="activateUser(<%= u.user_id %>)">Activate</button>
+                            <% } %>
+                        </td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        (function(){
+            const input = document.getElementById('userSearch');
+            const table = document.getElementById('usersTable');
+            const rows = Array.from(table.querySelectorAll('tbody tr'));
+
+            function filter(){
+                const term = input.value.trim().toLowerCase();
+                rows.forEach(r=>{
+                    const txt = r.textContent.toLowerCase();
+                    r.style.display = (!term || txt.includes(term)) ? '' : 'none';
+                });
+            }
+
+            input.addEventListener('input', filter);
+        })();
+
+        async function activateUser(id){
+            if(!confirm('Activate user '+id+'?')) return;
+            const res = await fetch('/admin/user/'+id+'/activate', { method: 'POST' });
+            const j = await res.json();
+            alert(j.message || (j.success? 'Activated':'Error'));
+            if(j.success) window.location.reload();
+        }
+
+        async function deactivateUser(id){
+            if(!confirm('Deactivate user '+id+'? This will prevent login.')) return;
+            const res = await fetch('/admin/user/'+id+'/deactivate', { method: 'POST' });
+            const j = await res.json();
+            alert(j.message || (j.success? 'Updated':'Error'));
+            if(j.success) window.location.reload();
+        }
+    </script>
+</body>
+</html>

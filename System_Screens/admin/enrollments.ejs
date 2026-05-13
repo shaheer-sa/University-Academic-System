@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Enrollments - Admin Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar h1 {
+            font-size: 24px;
+        }
+        
+        .navbar-user {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        
+        .navbar a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h2 {
+            color: #333;
+            font-size: 28px;
+        }
+        
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        
+        .back-btn:hover {
+            background: #764ba2;
+        }
+
+        .search-wrap {
+            margin: 0 0 18px 0;
+        }
+
+        .search-input {
+            width: 100%;
+            max-width: 420px;
+            padding: 10px 12px;
+            border: 1px solid #d6dbe6;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus {
+            border-color: #667eea;
+        }
+
+        .search-meta {
+            margin-top: 8px;
+            color: #666;
+            font-size: 13px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        tr:hover {
+            background: #f9f9f9;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 50px;
+            color: #999;
+        }
+        
+        .logout-btn {
+            background: #dc3545;
+        }
+        
+        .logout-btn:hover {
+            background: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🎓 University System</h1>
+        <div class="navbar-user">
+            <span>👤 <%= user.username %> (<%= user.role %>)</span>
+            <a href="/logout" class="logout-btn">Logout</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="header">
+            <h2>📋 All Enrollments</h2>
+            <a href="/admin/dashboard" class="back-btn">← Back to Dashboard</a>
+        </div>
+        
+        <% if (enrollments && enrollments.length > 0) { %>
+            <div class="search-wrap">
+                <input id="enrollmentSearch" class="search-input" type="text" placeholder="Search by student, course, status, or enrollment ID" />
+                <div id="enrollmentSearchMeta" class="search-meta">Showing all records</div>
+            </div>
+
+            <table id="enrollmentsTable">
+                <thead>
+                    <tr>
+                        <th>Enrollment ID</th>
+                        <th>Student Name</th>
+                        <th>Course Name</th>
+                        <th>Enroll Date</th>
+                        <th>status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% enrollments.forEach(enrollment => { %>
+                        <tr>
+                            <td><%= enrollment.enrollment_id %></td>
+                            <td><%= enrollment.student_name %></td>
+                            <td><%= enrollment.course_name %></td>
+                            <td><%= enrollment.enrollment_date %></td>
+                            <td><%= enrollment.status || 'Active' %></td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+
+            <div class="no-data" id="enrollmentNoResults" style="display:none; margin-top:12px;">
+                <p>No matching enrollments found.</p>
+            </div>
+        <% } else { %>
+            <div class="no-data">
+                <p>No enrollments found in the system.</p>
+            </div>
+        <% } %>
+    </div>
+
+    <script>
+        (function () {
+            const input = document.getElementById('enrollmentSearch');
+            const table = document.getElementById('enrollmentsTable');
+            const noResults = document.getElementById('enrollmentNoResults');
+            const meta = document.getElementById('enrollmentSearchMeta');
+
+            if (!input || !table) return;
+
+            const rows = Array.from(table.querySelectorAll('tbody tr'));
+
+            function filterRows() {
+                const term = input.value.trim().toLowerCase();
+                let visibleCount = 0;
+
+                rows.forEach((row) => {
+                    const text = row.textContent.toLowerCase();
+                    const show = !term || text.includes(term);
+                    row.style.display = show ? '' : 'none';
+                    if (show) visibleCount += 1;
+                });
+
+                if (noResults) {
+                    noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+                }
+
+                if (meta) {
+                    meta.textContent = term
+                        ? `Showing ${visibleCount} matching record(s)`
+                        : 'Showing all records';
+                }
+            }
+
+            input.addEventListener('input', filterRows);
+        })();
+    </script>
+</body>
+</html>
