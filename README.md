@@ -4,8 +4,6 @@ A professional, easy-to-manage database application built for the Semester Proje
 
 ## 📁 System Folder Guide
 
-I have renamed all folders to be easily understandable:
-
 ```
 /University System/
 ├── Database_Instructions/    # Step-by-step SQL files to setup your database
