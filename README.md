@@ -2,7 +2,7 @@
 
 A professional, easy-to-manage database application built for the Semester Project.
 
-## 📁 System Folder Guide (Simplified)
+## 📁 System Folder Guide
 
 I have renamed all folders to be easily understandable:
 
